@@ -2,69 +2,11 @@
 <head>
 <link rel="stylesheet" href='jquery.mobile-1.4.4.min.css'/>
 <script type="text/javascript" src="jquery-1.11.1.min.js"></script>
-<script type="text/javascript" src='jquery.mobile-1.4.4.min.js'></script>
-<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script> 
+<script type="text/javascript" src='jquery.mobile-1.4.4.min.js'></script> 
+<script type="text/javascript" src="Barcode.js"></script>
 <script>
-
-  var geocoder;
- 
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
-} 
-//Get the latitude and the longitude;
-function successFunction(position) {
-    var lat = position.coords.latitude;
-    var lng = position.coords.longitude;
-    codeLatLng(lat, lng)
-}
- 
-function errorFunction(){
-    alert("Geocoder failed");
-}
- 
-  function initialize() {
-    geocoder = new google.maps.Geocoder();
- 
- 
- 
-  }
- 
-  function codeLatLng(lat, lng) {
- 
-    var latlng = new google.maps.LatLng(lat, lng);
-    geocoder.geocode({'latLng': latlng}, function(results, status) {
-      if (status == google.maps.GeocoderStatus.OK) {
-      console.log(results)
-        if (results[1]) {
-         //formatted address
-         $('#location').text(results[0].formatted_address)
-        //find country name
-             for (var i=0; i<results[0].address_components.length; i++) {
-            for (var b=0;b<results[0].address_components[i].types.length;b++) {
- 
-            //there are different types that might hold a city admin_area_lvl_1 usually does in come cases looking for sublocality type will be more appropriate
-                if (results[0].address_components[i].types[b] == "administrative_area_level_1") {
-                    //this is the object you are looking for
-                    city= results[0].address_components[i];
-                    break;
-                }
-            }
-        }
-        //city data
-        //$('#location').text(city.short_name + " " + city.long_name);
- 
- 
-        } else {
-          $('#location').text("No results found");
-        }
-      } else {
-        $('#location').text("Geocoder failed due to: " + status);
-      }
-    });
-  }
-
 			function syncAjax(u){
-			console.log(u);
+			console. log(u);
 				var obj=$.ajax(
 					{url:u,
 					 async:false
@@ -73,62 +15,35 @@ function errorFunction(){
 				console.log(obj.responseText);
 				return $.parseJSON(obj.responseText);
 				
-			}
-	
-			
+			}			
 $(document).ready(function(){
-//join function
-  $("#join").click(function(){
-    var a = parseInt($('#seats').text(), 10);
-	var l = document.getElementById('location').innerHTML;
-	if(a <= a && a > 0){
-    var diff = a-1;
-	$('#seats').text(diff);
-	var nop = parseInt($('#pass').text(), 10);
-	nop++;
-	$('#pass').text(nop);
-	var u ="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=3&id=1&s="+diff+"&l="+l;
-	return syncAjax(u);
-	}
-//left function	
-  });
-  $("#left").click(function(){
-	var b = parseInt($('#seats').text(),10);
-	var l = document.getElementById('location').innerHTML;
-	if(b < 35 && b >= 0) {
-	var sum = b+1;
-	$('#seats').text(sum);
-	var u ="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=3&id=1&s="+sum+"&l="+l;
-	return syncAjax(u);
-  }
-  });
-//reset function
-  $("#reset").click(function(){
-  	r=syncAjax("http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=1&id=1");
-	d=syncAjax("http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=5");
-	var x =(r.busapp.default_seats)-(d.busapp.number);
-	$('#seats').text(x);
-	$('#pass').text('0');
-  });
-  
- //get reserve list
- $("#get_res").click(function(){
- r=syncAjax("http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=5");
- $('#list').text(r.busapp.number);
- var u="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=4";
- r=syncAjax(u);
- for(var i=0;i<r.busapp.length;i++){
- var names = r.busapp[i].name + " is at " + r.busapp[i].location;
- $('<li>'+ names +'</li>').appendTo($('#flow'));
- }
+
+$("#refresh").click(function(){
+r=syncAjax("http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=1&id=1");
+$('#seats').text(r.busapp.seats);
+$('#location').text(r.busapp.location);
+});
+
+$("#book").click(function(){
+var n = $('#name').val();
+var l = $('#set_location').val();
+var u ="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=8&n="+n+"&l="+l;
+return syncAjax(u);
+document.getElementById("book").disabled = true;
+});
+
+$("#get").click(function(){
+var nn = ($('#Eget').val());
+r=syncAjax("http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=6&n="+nn);
+$('#inputdata').text(r.busapp.code);
 });
 
 });
 </script>
 </head>
-<body onload="initialize()">
+<body>
 
-<!--DRIVER-->
+<!--USER-->
 <div data-role="page" id="home">
 <div data-role="header">
 <div data-role="navbar">
@@ -140,14 +55,11 @@ $(document).ready(function(){
 </div>
 
 <div role="main" class="ui-content" align="center"> 
-<p id='seats' style='font-size:500%'></p>
+<p id='seats' style='font-size:500%'>Refresh for seats..</p>
 <p id='location' style='font-size:100%'>Searching....</p>
-<p id='pass' style='font-size:100%'>0</p>
 
 <div data-role="controlgroup" data-type="horizontal">
-<button id="join" data-icon="plus">JOINED</button>
-<button id="reset" data-icon="refresh">RESET</button>
-<button id="left" data-icon="minus">LEFT</button>
+<button id="refresh" data-icon="refresh">REFRESH</button>
 </div>
 </div>
 
@@ -169,21 +81,36 @@ $(document).ready(function(){
 </div>
 </div>
 
-
 <div role="main" class="ui-content" align="center">
-<button id="get_res">Get Reserved List</button>
-<div id="list" style="font-size:500%">
-0
+<div id="form">
+<input  id="name" value="" placeholder="Enter name"/>
+<input  id="set_location" value="" placeholder="Location"/>
+<button id="book" onclick="refresh()">Book a seat</button>
 </div>
-<ul id="flow">
-
-</ul>
+<input  id="Eget" value="" placeholder="Enter your name to get the code"/>
+<button id="get" onclick="writeBC(document.getElementById('inputdata').innerHTML)">Press Twice To Get Code</button>
+<div>
+<div id="inputdata"></div>
+<div id="bcArea"></div>
+<script type="text/javascript">
+function writeBC(s)
+{
+    var bc = new AtalasoftBarcode39(s);
+    document.getElementById('bcArea').innerHTML = bc.getBarcode(50, 2, 8);
+	document.getElementById("Eget").disabled=true;
+}
+function refresh()
+{
+//document.getElementById("book").disabled=true;
+document.location.reload(true);
+}
+</script>
+</div>
 </div>
 
 <div data-role="footer">
-<h1>Developed By: General Lopie n Tha Cartel</h1>
+<h1>Developed By: Tha Cartel</h1>
 </div>
-
 </div>
 </body>
 </html>
